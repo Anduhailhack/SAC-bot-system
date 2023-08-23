@@ -1,0 +1,33 @@
+input {
+    width: max-content;
+    margin: .5rem;
+}
+
+.questionier {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    font-family: 'Open-sans', sans-serif;
+}
+
+.questionier div {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.questionier label {
+    // display: flex;
+    // align-items: center;
+    // justify-content: center;
+    cursor: pointer;
+    // width: max-content;
+}
+
+li {
+    // margin: 1rem;
+    margin-left: 1rem;
+}
+
+textarea {
+    resize: vertical;
+}

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js?1"></script>
+    <script>
+        function setTheme() {
+            document.documentElement.className = Telegram.WebApp.colorScheme;
+        }
+
+        Telegram.WebApp.onEvent("themeChanged", setTheme)
+        setTheme()
+    </script>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/send_request.css">
+    <title>Appoitement</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Student diagnosis info</h2>
+        <ol>
+            <div class="questionier">
+                <div>
+                    <%= "🔹 Student ID : " + studInfo.stud_id %> <br>
+                        <%= "🔹 Name : " + studInfo.f_name + " " + studInfo.l_name %> <br>
+                            <%= "🔹 Email : " + studInfo.email %> <br>
+                                <%= "🔹 Phone no : " + studInfo.phone_no %> <br>
+                </div>
+                <div>
+                    <li>Any suicidal ideations (Do you have any tendancy of hurting or killing yourself)?</li>
+                    <label>
+                        <input type="radio" name="code_1" value="true" <% if(diagnosis.code1=='true' ) { %>
+                        <%= 'checked' %>
+                            <% } %> > Yes
+                    </label>
+                    <label>
+                        <input type="radio" name="code_1" value="false" <% if(diagnosis.code1=='false' ) { %>
+                        <%= 'checked' %>
+                            <% } %> > No
+                    </label>
+                </div>
+                <div>
+                    <li>Any homicidal ideation(Do you have a tendancy to attack or hurt any particular person)?</li>
+                    <label>
+                        <input type="radio" name="code_2" value="true" <% if(diagnosis.code2=='true' ) { %>
+                        <%= 'checked' %>
+                            <% } %> > Yes
+                    </label>
+                    <label>
+                        <input type="radio" name="code_2" value="false" <% if(diagnosis.code2=='false' ) { %>
+                        <%= 'checked' %>
+                            <% } %> > No
+                    </label>
+                </div>
+                <div>
+                    <li>Do you have any expansive or elated moods (Do you feel depressed or lonely)?</li>
+                    <label>
+                        <input type="radio" name="code_3" value="true" <% if(diagnosis.code3=='true' ) { %>
+                        <%= 'checked' %>
+                            <% } %> > Yes
+                    </label>
+                    <label>
+                        <input type="radio" name="code_3" value="false" <% if(diagnosis.code3=='false' ) { %>
+                        <%= 'checked' %>
+                            <% } %> > No
+                    </label>
+                </div>
+                <div>
+                    <li>Do you have a persistent lowmood, hopelessness or worthlessness?</li>
+                    <label>
+                        <input type="radio" name="code_4" value="true" <% if(diagnosis.code4=='true' ) { %>
+                        <%= 'checked' %>
+                            <% } %> > Yes
+                    </label>
+                    <label>
+                        <input type="radio" name="code_4" value="false" <% if(diagnosis.code4=='false' ) { %>
+                        <%= 'checked' %>
+                            <% } %> > No
+                    </label>
+                </div>
+                <div>
+                    <li>Alcohol or Substance use withdrawal symptoms?</li>
+                    <label>
+                        <input type="radio" name="code_5" value="true" <% if(diagnosis.code5=='true' ) { %>
+                        <%= 'checked' %>
+                            <% } %> > Yes
+                    </label>
+                    <label>
+                        <input type="radio" name="code_5" value="false" <% if(diagnosis.code5=='false' ) { %>
+                        <%= 'checked' %>
+                            <% } %> >
+                                No
+                    </label>
+                </div>
+            </div>
+        </ol>
+        <textarea name="remarks" id="remarks" placeholder="How do you feel?"
+            disabled><%=(diagnosis.remark || ' ' ) %></textarea>
+    </div>
+
+    <div class="container set-app-container">
+        <h2>Set Appointment</h2>
+
+        <p id="caption" class="caption">Fill the following form accordingly to set an appointment.</p>
+
+        <input type="text" name="stud_id" id="id" class="input" placeholder="Student ID" value="<%= studInfo.stud_id %>"
+            required>
+        <!-- Didn't think of this but good idea-->
+
+        <textarea id="remark" placeholder="Remark: Say something to the student."></textarea>
+
+        <input type="date" name="date" id="date" class="input" required>
+        <input type="time" name="time" id="time" class="input" required>
+        <input type="text" name="place" id="place" class="input" placeholder="Place of Appointment" required>
+
+        <button id="set-appointment">Set Appointment</button>
+    </div>
+
+    <script type="text/javascript" src="/js/script.js"></script>
+</body>
+
+</html>

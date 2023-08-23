@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js?1"></script>
+    <script>
+        function setTheme() {
+            document.documentElement.className = Telegram.WebApp.colorScheme;
+        }
+
+        Telegram.WebApp.onEvent("themeChanged", setTheme)
+        setTheme() 
+    </script>
+    <link rel="stylesheet" href="./../../css/style.css">
+    <link rel="stylesheet" href="./../../css/appointment.css">
+    <title>Appoitement</title>
+</head>
+
+<body>
+    <h2>Appointments</h2>
+    <div class="container">
+        <ul>
+            <li>
+                Name : Samrawit Alebel
+            </li>
+            <li>
+                ID : Someone
+            </li>
+            <li>
+                Data : 12/3/2018
+            </li>
+            <li>
+                Time : 12:40 AM
+            </li>
+            <li>
+                Remark : jalksjdfkja
+            </li>
+        </ul>
+        <div class="action-btn-container">
+            <button onclick="editAppointment('idhere')">Edit</button>
+            <button class="btn-danger" onclick="deleteAppointment('idhere')">Delete</button>
+        </div>
+    </div>
+    <div class="container">
+        <!-- I am working on this page  -->
+
+        <!-- What is this page upto? -->
+        <!-- this page is suppose to list all or atleast few 100 appointments off the dOr iatabase -->
+        <!-- How is it sending the data to the bot? -->
+        <!-- or is it a web app that pops up? -->
+        <!-- Can I show you the diagram on draw io or paint or something? -->
+        <!-- አይ ዉድ ላይክ ቱ። ኢቭን ኢት ወስ ቤተር ኢፍ አይ ካን ሊስን ቱ ዩር ቮይስ
+        ኤኒ አዘር ፕላትፎርም ዛት ካን ወርክ? --> <!--Can we Zoom Chat? -->
+        <!-- I don't have zoom 
+        you can use the web version rko lt;s use google meet POSSIBLE -->
+        <ul>
+            <li>
+                Name : Samrawit Alebel
+            </li>
+            <li>
+                ID : Someone
+            </li>
+            <li>
+                Data : 12/3/2018
+            </li>
+            <li>
+                Time : 12:40 AM
+            </li>
+            <li>
+                Remark : jalksjdfkja
+            </li>
+        </ul>
+        <div class="action-btn-container">
+            <button onclick="editAppointment('idhere')">Edit</button>
+            <button class="btn-danger" onclick="deleteAppointment('idhere')">Delete</button>
+        </div>
+    </div>
+    <script type="text/javascript" src="/js/script.js"></script>
+    <script type="text/javascript" src="/js/sp/sp_check_appointment.js"></script>
+</body>
+
+</html>
