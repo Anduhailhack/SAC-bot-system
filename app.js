@@ -60,7 +60,11 @@ app.get("/stud/verify", (req, res) => {
 
 /** service provider */
 app.get("/donate", (req, res) => {
-	res.render('html' + path.sep + 'sp' + path.sep + 'sp_check_appointments');
+	res.render('html' + path.sep + 'donate' + path.sep + 'donate');
+});
+
+app.get("/donateAccepted", (req, res) => {
+	res.render('html' + path.sep + 'donate' + path.sep + 'donateAccepted');
 });
 
 // app.get("/sp/send_requests", (req, res) => {
@@ -842,6 +846,37 @@ axios.post(process.env.API + "/admin/verify", { token })
 	})
 })
 })
+
+
+app.post('/chapaPay', (req, res) => {
+	let {public_key, tx_ref, amount, currency, email, first_name, last_name, title, phone_number, description, logo, callback_url, return_url, meta} = req.body
+   
+   public_key = "CHAPUBK_TEST-1GsPpSPDWRaIReY7bZBV044i6oBbHUue"
+   callback_url = process.env.BACKEND_API + "/payment/chapaWebhook"
+   return_url = process.env.BASE_WEB_API + "/donateAccepted"
+
+   const toChapa = { public_key, tx_ref, amount, currency, email, first_name,  last_name, title, description, logo, callback_url, return_url, meta, phone_number}
+   axios.post(process.env.BACKEND_API + "/payment/chapaPay", toChapa)
+   .then((response)=>{
+	   if(response.data.status){
+		   return res.status(200).json({
+			   status: "success",
+			   result: {
+				   msg: response.data.result.msg,
+				   data: response.data.result.data
+			   }
+		   })
+	   }
+   }).catch((error) => {
+	   res.status(400).json({
+		   status: "error",
+		   result: {
+			   msg: error.response.data.result.msg
+		   }
+	   })
+   })
+})
+
 
 
 bot.start(home);
