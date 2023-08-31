@@ -10,12 +10,19 @@ signupBtn.addEventListener("click", (event) => {
 	let email = document.getElementById("email").value;
 	let phoneNo = document.getElementById("phone-no").value;
 	let educationalBkg = document.getElementById("educational-bkg").value;
-	let workExp = document.getElementById("work-exp").value;
+	let speciality = document.getElementById("speciality").value;
 	let officeLocation = document.getElementById("office-location").value;
 	let healthTeam = document.getElementById("health-team").value;
 	let startAt = document.getElementById("start-at").value;
 	let endAt = document.getElementById("end-at").value;
+	let dateCheckbox = document.getElementsByName("dates")
+	let dates = []
 
+	for (var i = 0; i < dateCheckbox.length; i++) {
+		if (dateCheckbox[i].checked) {
+		  dates.push(dateCheckbox[i].value);
+		}
+	  }
 	if (verify(providerId, fName, lName, email, phoneNo)){
 		signupBtn.setAttribute('disabled', 'disabled')
 		signupBtn.setAttribute('style', 'opacity: 0.5;');
@@ -35,11 +42,12 @@ signupBtn.addEventListener("click", (event) => {
 				phone_no: phoneNo,
 				educational_bkg: educationalBkg,
 				health_team: healthTeam,
-				work_exp: workExp,
+				speciality: speciality,
 				office_location: officeLocation,
 				available_at : {
-					start_at: startAt,
-					end_at: endAt
+					starting_time: startAt,
+					ending_time: endAt,
+					dates,
 				},
 				initData : webApp.getInitData()
 			})

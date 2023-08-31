@@ -9,11 +9,12 @@ sendReqBtn.addEventListener('click', envent => {
     const code3 = document.querySelector("input[name=code_3]:checked")
     const code4 = document.querySelector("input[name=code_4]:checked")
     const code5 = document.querySelector("input[name=code_5]:checked")
+    const code6 = document.querySelector("input[name=code_6]:checked")
     const remark = document.querySelector("#remarks")
 
     if (!code1 || !code2 ||
         !code3 || !code4 ||
-        !code5) {
+        !code5 || !code6) {
         sendReqCap.classList.add("warning")
         sendReqCap.innerText = "Fill the following questionier accordingly." 
         return;
