@@ -113,4 +113,13 @@ ul {
   background-color: var(--tg-theme-bg-color, #ffffff);
 }
 
+#dates label, #dates input {
+  font-size: smaller;
+  display: inline-block;
+}
+
+#dept.input, #batch.input {
+  color: var(--tg-theme-hint-color, #ccc);
+}
+
 /*# sourceMappingURL=style.css.map */

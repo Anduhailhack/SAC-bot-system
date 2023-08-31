@@ -61,18 +61,7 @@ signupBtn.addEventListener("click", (event) => {
 						} );
 					
 
-					// caption.innerText = ""
-					// window.location.href = res.result.route
-					// return;
-				}
-				// else if(res.result.error_code && res.result.error_code == 11000){
-				// 	caption.innerText = res.result.msg
-				// 	caption.classList.add("warning");
-				// 	webApp.showAlert("User with this email has already registered. Plese Login")
-				// 	window.location.href = res.result.route
-				// 	return;
-				// }
-				else {
+				} else {
 					caption.innerText = res.result.msg
 					caption.classList.add("warning");
 					signupBtn.removeAttribute('disabled')
@@ -118,4 +107,28 @@ function verify(studId, fName, lName, email, phoneNo){
 		return false;
 	}
 	return true;
+}
+
+function populateBatch(){
+	const dept = document.getElementById("dept").value
+	const batch = document.getElementById("batch")
+	let years = [];
+
+	batch.innerHTML = ""
+
+	if(dept == "medicine"){
+		years = ["PC1", "PC2", "C1", "C2", "Internship"]
+	} else if (dept == "dental"){
+		years = ["PC1", "PC2", "D1", "D2", "Internship"]
+	} else if (dept == "mrt" || dept == "laboratory" || dept == "anesthesia") {
+		years = ["1st", "2nd" , "3rd" ,"4th"]
+	} else {
+		years = []
+	}
+
+	years.forEach((year) => {
+		var option = document.createElement("option")
+		option.text = year
+		batch.add(option)
+	})
 }
