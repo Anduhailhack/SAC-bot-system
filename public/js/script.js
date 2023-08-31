@@ -38,7 +38,7 @@ WebApp.prototype.getInitData = function () {
 };
 
 WebApp.prototype.isValidEmail = function (email) {
-	return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email);
+	return (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email)) && (/@aau\.edu\.et$/i.test(email));
 };
 
 WebApp.prototype.isName = function (name){
