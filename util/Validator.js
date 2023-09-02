@@ -10,13 +10,13 @@ const isValidEmail = isEmail("james_brown@abc.edu.e");
 console.log(isValidEmail);
 */
 
-function isPhoneNumber(phoneNumber) {
+function isPhoneNo(phoneNumber) {
     // check for Telecom or Safaricom phone number
 	return /^(?:\+251|0)[97]\d{8}$/.test(phoneNumber);
 }
 
 /*
-const isValidPhoneNumber = isPhoneNumber("+251712345678");
+const isValidPhoneNumber = isPhoneNo("+251712345678");
 console.log(isValidPhoneNumber);
 */
 
@@ -43,4 +43,4 @@ function isValidInitData (telegramInitData){
     return calculatedHash == hash;
 }
 
-module.exports = {isEmail, isName, isPhoneNumber, isValidInitData}
+module.exports = {isEmail, isName, isPhoneNo, isValidInitData}
