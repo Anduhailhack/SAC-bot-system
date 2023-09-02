@@ -1,6 +1,7 @@
 "use strict";
 
 // const $ = document;
+const {isEmail, isName, isPhoneNo} = require("../../util/Validator.js")
 
 const WebApp = function () {
 	Telegram.WebApp.ready();
@@ -37,8 +38,9 @@ WebApp.prototype.getInitData = function () {
 	return this.initData;
 };
 
-WebApp.prototype.isValidEmail = function (email) {
-	return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email);
+WebApp.prototype.isEmail = function (email) {
+	// check for aau.edu.et domain 
+	return /^[\w]+([\.-]?[\w]+)*@aau\.edu\.et$/.test(email);
 };
 
 WebApp.prototype.isName = function (name){
@@ -52,7 +54,8 @@ WebApp.prototype.isTashID = function (id){
 }
 
 WebApp.prototype.isPhoneNo = function(phoneNo){
-	let isValid = /^\d[79]\d{8}$/.test(phoneNo);
+	// check for Telecom or Safaricom phone number
+	let isValid = /^(?:\+251|0)[97]\d{8}$/.test(phoneNo);
 	return isValid;
 }
 WebApp.prototype.isTASHStudId = function(studId){
