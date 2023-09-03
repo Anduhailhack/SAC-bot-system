@@ -116,7 +116,7 @@ MongoClient.connect(process.env.MONGO_CONN, { useNewUrlParser: true, useUnifiedT
   
 app.post('/sp_signup', (req, res) => {
 	const {provider_id, f_name, l_name, email, phone_no,		//Telegram ID
-		educational_bkg, work_exp, health_team,
+		educational_bkg, speciality, health_team,
 		office_location, available_at, initData} = req.body;
 	
 	const decodedUrlParams = new URLSearchParams(initData);
@@ -135,7 +135,7 @@ app.post('/sp_signup', (req, res) => {
 	
 	axios.post(process.env.API + "/service-provider/signup", { 
 		provider_id, f_name, l_name, email, phone_no,		//Telegram ID
-		educational_bkg, work_exp, sp_team : health_team,
+		educational_bkg, speciality, sp_team : health_team,
 		office_location, available_at, telegram_id : userId
 	})
 	.then((response) => {
@@ -157,7 +157,7 @@ app.post('/sp_signup', (req, res) => {
 				})
 		}
 	}).catch((err) => {
-		console.log(err.response.data)
+		console.log(err)
 		if(err.response.data.result && err.response.data.result.err && err.response.data.result.err.message){
 			res.status(401).json({
 				status: false,
