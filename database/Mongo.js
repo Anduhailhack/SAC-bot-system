@@ -9,20 +9,14 @@ const MongoDb = function () {
         })
 }
 
-//Session Schema
 const sessionSchema = new mongoose.Schema({
-    // tgId: {
-    //     type: String, //this is not a number, make it string
-    //     required: [true, "Telegram ID must be given"],
-    //     unique: true
-    // },
     key : {
         type : String,
         require : [true, "Key wasn't given"],
-        unique : true
+        // unique : true
     },
     data: {
-        role:{
+        role: {
             type: Number,
             required: [true, "Role Number must be given"]
         },
@@ -31,125 +25,130 @@ const sessionSchema = new mongoose.Schema({
             required: [true, "Telegram token must be given"]
         },
         expiration: {
-            type: Date, //this is good
+            type: Date, 
             required: [true, "Expiration time must be given"]
         },
         issued_time: {
             type: Date,
-            dafault: Date.now() //beautiful
+            dafault: Date.now() 
         }
     }
 })
 
-// const Sessions = mongoose.model('session', sessionSchema)
+const Session = mongoose.model('Session', sessionSchema)
 
 
 //Function that add/updates a session to/in the database
-MongoDb.prototype.addSession = async function(_id, key, data, callback){
-    // const tgId = key.split(':')[1]
-    const sessionFind = await Sessions.findOne({ key })
+MongoDb.prototype.addSession = async function(key, data, callback){
+    const userSession = await Session.findOneAndRemove({ key : key })
 
-    if(sessionFind.length == 0){
-        await Sessions.create({
-            key,
-            data
-        }).then((data) => {
-            const ret = {
-                status: true,
-                result: {
-                    msg: "New session added to the db",
-                    data
-                }
+    const schema = new Session({
+        key,
+        data
+    })
+    
+    schema.save({
+        upsert : true
+    }).then(function (retVal){
+        const ret = {
+            status: true,
+            result: {
+                msg: "New session added to the db",
+                data : retVal
             }
-            return callback(ret)
-        }).catch((error) => {
-            ret = {
-                status: false,
-                result: {
-                    msg: error.message || "Error while adding the session to the database",
-                    error
-                }
+        }
+        return callback(ret)
+    }).catch(function (errVal){
+        const ret = {
+            status: false,
+            result: {
+                msg: "Error while adding the session to the database",
+                error : errVal
             }
-            return callback(ret)
-        })
-    } else {
-        await Sessions.findOneAndUpdate({ key }, { _id, key, data})
-            .then((data) => {
-                const ret = {
-                    status: true,
-                    result: {
-                        msg: "Session updated on the db",
-                        data
-                    }
-                }
-                return callback(ret)
-            }).catch((error) => {
-                ret = {
-                    status: false,
-                    result: {
-                        msg: error.message || "Error while adding the session to the database",
-                        error
-                    }
-                }
-                return callback(ret)
-            })
-    }
+        }
+        return callback(ret)
+    })
 }
 
 MongoDb.prototype.removeSesseion = async function (key, callback){
-    // const tgId = key.split(':')[1]
-    try {
+    const userSession = await Session.findOneAndRemove({ key : key })
 
-        await Sessions.findOneAndRemove({ 'key' : `${key}:${key}` })
-            .then((data) => {
-                console.log(data)
-                const ret = {
-                    status: true,
-                    result: {
-                        msg: `Session of user ${key} has been removed.`,
-                        data
-                    }
-                }
-                return callback(ret)
-            }).catch((error) => {
-                console.log(error)
-                const ret = {
-                    status: false,
-                    result: {
-                        msg: error.message || "Error finding or removing the sessin from the database",
-                        error
-                    }
-                }
-                return callback(ret)
-            })
-    }catch (err) {
-        console.log("Probably session not found: " + err)
+    if (userSession) {
+        const ret = {
+            status: true,
+            result: {
+                msg: `Session of user ${key} has been removed.`,
+                data : userSession
+            }
+        }
+        return callback(ret)
+    }else {
+        const ret = {
+            status: false,
+            result: {
+                msg: "Session already removed.",
+                data : userSession
+            }
+        }
+        return callback(ret)
     }
+
+    // try {
+    //     await Sessions.findOneAndRemove()
+    //         .then((data) => {
+    //             console.log(data)
+                
+    //         }).catch((error) => {
+    //             console.log(error)
+                
+    //         })
+    // }catch (err) {
+    //     console.log("Probably session not found: " + err)
+    // }
 }
 
 MongoDb.prototype.getSession = async function (key, callback)  {
-    // const tgId = key.split(':')[1]
 
-    await Sessions.findOne({ key })
-        .then((data) => {
-            const ret = {
-                status: true,
-                result: {
-                    msg: "Successfuly retured the session of the user",
-                    data
-                }
+    const userSession = await Session.findOne({ key : key })
+
+    if (userSession) {
+        const ret = {
+            status: true,
+            result: {
+                msg: "Successfuly retured the session of the user",
+                data : userSession
             }
-            return callback(ret)
-        }).catch((error) => {
-            const ret = {
-                status : false,
-                result: {
-                    msg: error.message || "Can not get session from the db",
-                    error
-                }
+        }
+        return callback(ret)
+    }else {
+        const ret = {
+            status : false,
+            result: {
+                msg: "Can not get session from the db",
+                data : userSession
             }
-            return callback(ret)
-        })
+        }
+        return callback(ret)
+    }
+        // .then((data) => {
+        //     const ret = {
+        //         status: true,
+        //         result: {
+        //             msg: "Successfuly retured the session of the user",
+        //             data
+        //         }
+        //     }
+        //     return callback(ret)
+        // }).catch((error) => {
+        //     const ret = {
+        //         status : false,
+        //         result: {
+        //             msg: error.message || "Can not get session from the db",
+        //             error
+        //         }
+        //     }
+        //     return callback(ret)
+        // })
 
 }
 

@@ -53,14 +53,6 @@ ServiceProvider.prototype.home = async function (userId, f_name) {
 };
 
 ServiceProvider.prototype.logout = async function (ctx){
-	let k = 0;
-	for(let i = 0; i <= 10; i++ ){
-		k =  (ctx.message && ctx.message.message_id) ? ctx.message.message_id - 1 : ctx.update.callback_query.message.message_id - i;
-		try {
-			await ctx.deleteMessage(k)
-		} catch (error) {
-		}
-	}
 	ctx.reply("Are you sure, you want to logout ?",
 	{
 		reply_markup : {
@@ -75,20 +67,14 @@ ServiceProvider.prototype.logout = async function (ctx){
 }
 
 ServiceProvider.prototype.yesLogout = function (ctx){
-	//delete the session from database here
-	db.removeSesseion(ctx.from.id, async (res)=>{
-		// let k = 0;
-		// for(let i = 0; i <= 10; i++ ){
-		// 	k =  (ctx.message && ctx.message.message_id) ? ctx.message.message_id - 1 : ctx.update.callback_query.message.message_id - i;
-		// 	try {
-		// 		await ctx.deleteMessage(k)
-		// 	} catch (error) {
-		// 		break;
-		// 	}
-		// }
-		try {
-			await ctx.deleteMessage()
-		} catch (error) {
+	db.removeSesseion(`${ctx.from.id}:${ctx.from.id}`, async (res)=>{
+		let k = 0;
+		for(let i = 0; i <= 10; i++ ){
+			k =  (ctx.message && ctx.message.message_id) ? ctx.message.message_id - 1 : ctx.update.callback_query.message.message_id - i;
+			try {
+				await ctx.deleteMessage(k)
+			} catch (error) {
+			}
 		}
 		home(ctx)
 	});
@@ -102,6 +88,42 @@ ServiceProvider.prototype.noLogout = async function (ctx){
 	}
 }
 
+ServiceProvider.prototype.rejectStudRequest = async function (ctx) {
+	
+	ctx.reply("Are you sure, you want to reject this request ?",
+	{
+		reply_markup : {
+			inline_keyboard : [
+				[
+					{text : "👍 Yea", callback_data : "y_reject_stud_request"},
+					{text : "🙅 Nop", callback_data : "n_reject_stud_request"},
+				]
+			]
+		}
+	})
+	
+}
+
+ServiceProvider.prototype.yesRejectStudRequest = function (ctx){
+	db.removeSesseion(`${ctx.from.id}:${ctx.from.id}`, async (res)=>{
+		let k = 0;
+		for(let i = 0; i <= 2; i++ ){
+			k =  (ctx.message && ctx.message.message_id) ? ctx.message.message_id - 1 : ctx.update.callback_query.message.message_id - i;
+			try {
+				await ctx.deleteMessage(k)
+			} catch (error) {
+			}
+		}
+	});
+}
+
+ServiceProvider.prototype.noRejectStudRequest = async function (ctx){
+	try {
+		ctx.deleteMessage()
+	} catch (error) {
+		console.log(error);
+	}
+}
 /*
 ServiceProvider.prototype.login = function (ctx, data) {
 	ctx.sendChatAction("typing");
