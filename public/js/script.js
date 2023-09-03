@@ -59,7 +59,10 @@ WebApp.prototype.isPhoneNo = function(phoneNo){
 	return isValid;
 }
 WebApp.prototype.isTASHStudId = function(studId){
-	return true
+	const AAUStudentsIDRegex = /^HSR/i;
+	if(AAUStudentsIDRegex.test(studId))
+		return true
+	return false
 }
 
 WebApp.prototype.close = function(){

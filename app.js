@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const path = require("path")
 const { Telegraf } = require("telegraf");
-const { MongoClient } = require('mongodb'); //something like mongoose
+const { db } = require('./database/Mongo'); //something like mongoose
 // const { session } = require('telegraf-session-mongodb'); //session control test
 const { ServiceProvider } = require("./routes/ServiceProvider");
 const { Admin } = require("./routes/Admin");
@@ -20,7 +20,6 @@ const {
 	isValidInitData
 } = require("./util/Validator")
 
-// const { db } = require("./database/Mongo")
 /* --- DEV DEPENDANCIES --- */
 
 require("dotenv").config(); 
@@ -67,10 +66,6 @@ app.get("/donateAccepted", (req, res) => {
 	res.render('html' + path.sep + 'donate' + path.sep + 'donateAccepted');
 });
 
-// app.get("/sp/send_requests", (req, res) => {
-// 	res.render('html' + path.sep + 'sp' + path.sep + 'sp_send_requests');
-// });
-
 app.get("/sp/check_appointments", (req, res) => {
 	res.render('html' + path.sep + 'sp' + path.sep + 'sp_check_appointments');
 });
@@ -91,6 +86,16 @@ app.get("/sp/check_requests", (req, res) => {
 	res.render('html' + path.sep + 'sp' + path.sep + 'sp_check_requests');
 });
 
+app.get('/sp/set_appointment', (req, res) => {
+	const studInfo = JSON.parse((new Buffer.from(req.query.stud_info, 'base64')).toString('ascii'))
+	const diagnosis = JSON.parse((new Buffer.from(req.query.diagnosis, 'base64')).toString('ascii'))
+	const spInfo = JSON.parse((new Buffer.from(req.query.sp_info, 'base64')).toString('ascii'))
+
+	res.render('html' + path.sep + 'sp' + path.sep + 'set_appointment', {
+		studInfo, diagnosis, spInfo
+	})
+})
+
 /** ---------------------------------- */
 
 app.listen(process.env.PORT || 3000, "localhost", () => {
@@ -105,18 +110,10 @@ const bot = new Telegraf(botToken);
 // 	},
 // });
 
-MongoClient.connect(process.env.MONGO_CONN, { useNewUrlParser: true, useUnifiedTopology: true })
-.then(client => {
-	const db = client.db();
-	console.log("Database connected, successfully!")
-
-/**
- * SERVICE PROVIDER AUTH
- */
   
 app.post('/sp_signup', (req, res) => {
 	const {provider_id, f_name, l_name, email, phone_no,		//Telegram ID
-		educational_bkg, work_exp, health_team,
+		educational_bkg, speciality, health_team,
 		office_location, available_at, initData} = req.body;
 	
 	const decodedUrlParams = new URLSearchParams(initData);
@@ -135,7 +132,7 @@ app.post('/sp_signup', (req, res) => {
 	
 	axios.post(process.env.API + "/service-provider/signup", { 
 		provider_id, f_name, l_name, email, phone_no,		//Telegram ID
-		educational_bkg, work_exp, sp_team : health_team,
+		educational_bkg, speciality, sp_team : health_team,
 		office_location, available_at, telegram_id : userId
 	})
 	.then((response) => {
@@ -157,7 +154,7 @@ app.post('/sp_signup', (req, res) => {
 				})
 		}
 	}).catch((err) => {
-		console.log(err.response.data)
+		console.log(err)
 		if(err.response.data.result && err.response.data.result.err && err.response.data.result.err.message){
 			res.status(401).json({
 				status: false,
@@ -260,70 +257,91 @@ app.post('/sp_verify', (req, res) => {
 	axios.post(process.env.API +"/service-provider/verify", {token})
 	.then((response) => {
 		if(response.data.status && response.data.status == "success"){
-			let collection = db.collection("sessions");
-			
-			try {
-				let isSucc = collection.replaceOne(
-					{ key: `${userId}:${userId}` },
-					{ key: `${userId}:${userId}`, data: {
-						token : `${response.data.result.token}`
-					}},
-					{ upsert: true }
-				)
-
-			} catch (error) {
-				isSucc = {no : 0}
-				console.log(error)
-			}
-
-			if (isSucc.no == 1){
-				res.status(200).cookie({msg: response.data.result.token}).json({
-					status: "success",
-					result: {
-						msg: response.data.result.msg
-					}
-				})
-
-				let serviceProvider = new ServiceProvider(bot);
-				serviceProvider.home(userId, fName);
-			}else {
-				try {
-					const isSucc2 = collection.insertOne(
-						{ key: `${userId}:${userId}` },
-						{ key: `${userId}:${userId}`, data: {
-							token : `${response.data.result.token}`
-						}},
-						{ upsert: true }
-					)
-					if (isSucc2.acknowledged) {
-						res.status(200).cookie({msg: response.data.result.token}).json({
-							status: "success",
-							result: {
-								msg: response.data.result.msg
-							}
-						});
+			db.addSession(`${userId}:${userId}`, {
+				token : `${response.data.result.token}`,
+				expiration : new Date(new Date().getTime() + (response.data.result.expiration * 60 * 60 * 60)),
+				role : response.data.result.role
+			}, 
+			function (retVal){
+				if (retVal && retVal.status) {
+					res.status(200).cookie({msg: response.data.result.token}).json({
+						status: "success",
+						result: {
+							msg: response.data.result.msg
+						}
+					})
 	
-						let serviceProvider = new ServiceProvider(bot);
-						serviceProvider.home(userId, fName);
-					} else {
-						return res.status(401).cookie({msg: response.data.result.token}).json({
-							status: "error",
-							result: {
-								msg: "Couldn't set a session."
-							}
-						})
-					}
-				}catch (err) {
-					console.log(err)
+					let serviceProvider = new ServiceProvider(bot);
+					serviceProvider.home(userId, fName);
+				}else if (retVal && !retVal.status) {
 					return res.status(401).cookie({msg: response.data.result.token}).json({
 						status: "error",
 						result: {
-							msg: "Couldn't set a session. try logout first"
+							msg: "Couldn't set a session."
 						}
 					})
 				}
+			})
+			// try {
+			// 	let isSucc = collection.replaceOne(
+			// 		{ key: `${userId}:${userId}` },
+			// 		{ key: `${userId}:${userId}`, data: },
+			// 		{ upsert: true }
+			// 	)
 
-			}
+			// } catch (error) {
+			// 	isSucc = {no : 0}
+			// 	console.log(error)
+			// }
+
+			// if (isSucc.no == 1){
+			// 	res.status(200).cookie({msg: response.data.result.token}).json({
+			// 		status: "success",
+			// 		result: {
+			// 			msg: response.data.result.msg
+			// 		}
+			// 	})
+
+			// 	let serviceProvider = new ServiceProvider(bot);
+			// 	serviceProvider.home(userId, fName);
+			// }else {
+			// 	try {
+			// 		const isSucc2 = collection.insertOne(
+			// 			{ key: `${userId}:${userId}` },
+			// 			{ key: `${userId}:${userId}`, data: {
+			// 				token : `${response.data.result.token}`
+			// 			}},
+			// 			{ upsert: true }
+			// 		)
+			// 		if (isSucc2.acknowledged) {
+			// 			res.status(200).cookie({msg: response.data.result.token}).json({
+			// 				status: "success",
+			// 				result: {
+			// 					msg: response.data.result.msg
+			// 				}
+			// 			});
+	
+			// 			let serviceProvider = new ServiceProvider(bot);
+			// 			serviceProvider.home(userId, fName);
+			// 		} else {
+			// 			return res.status(401).cookie({msg: response.data.result.token}).json({
+			// 				status: "error",
+			// 				result: {
+			// 					msg: "Couldn't set a session."
+			// 				}
+			// 			})
+			// 		}
+			// 	}catch (err) {
+			// 		console.log(err)
+			// 		return res.status(401).cookie({msg: response.data.result.token}).json({
+			// 			status: "error",
+			// 			result: {
+			// 				msg: "Couldn't set a session. try logout first"
+			// 			}
+			// 		})
+			// 	}
+
+			// }
 			// res.status(200).cookie({msg: response.data.result.msg}).json({
 			// 	status: "success",
 			// 	result: {
@@ -332,13 +350,13 @@ app.post('/sp_verify', (req, res) => {
 			// })
 
 			
-		} else {
-			res.status(500).json({
-				status: "error",
-				result: {
-					msg: response.data.result.msg
-				}
-			})
+		// } else {
+		// 	res.status(500).json({
+		// 		status: "error",
+		// 		result: {
+		// 			msg: response.data.result.msg
+		// 		}
+		// 	})
 		}
 	}).catch((error) => {
 		console.log(error)
@@ -351,7 +369,7 @@ app.post('/sp_verify', (req, res) => {
 	})	
 })
 
-app.post('/hook/notify', async (req, res) => {
+app.post('/sp/notify_student_request', async (req, res) => {
 	const {initData, msg, stud_info, diagnosis, telegram_id} = req.body
 	
 	if(!isValidInitData(initData)){
@@ -374,7 +392,7 @@ app.post('/hook/notify', async (req, res) => {
 						<b>New student send you a diagnosis request.</b>
 						🔹 Student ID : ${stud_info.result[0].stud_id}
 						🔹 Name : ${stud_info.result[0].f_name} ${stud_info.result[0].l_name}
-						🔹 Email : ${stud_info.result[0].email}
+						🔹 Email : <a mailto='${stud_info.result[0].email}'>email</a>
 						🔹 Phone no : ${stud_info.result[0].phone_no}
 					`,
 					{
@@ -384,13 +402,14 @@ app.post('/hook/notify', async (req, res) => {
 								[{
 									text: "✅ Accept and Set appointment",
 									web_app : {
-										url : process.env.BASE_WEB_API + "/sp/set_appointment/" + 
+										url : process.env.BASE_WEB_API + "/sp/set_appointment?stud_info=" + 
 												(new Buffer.from(JSON.stringify(stud_info.result[0]))).toString('base64') +
-												"/" + (new Buffer.from(JSON.stringify(diagnosis))).toString('base64')
+												"&diagnosis=" + (new Buffer.from(JSON.stringify(diagnosis))).toString('base64') +
+												"&sp_info=" + (new Buffer.from(JSON.stringify(telegram_id[i]))).toString('base64')
 									}
 								}], [{
 									text: "❌ Reject",
-									callback_data : "reject_request"
+									callback_data : "reject_stud_request"
 								}]
 							]
 						}
@@ -407,13 +426,20 @@ app.post('/hook/notify', async (req, res) => {
 	})
 })
 
-app.get('/sp/set_appointment/:studInfo/:diagnosis', (req, res) => {
-	const studInfo = JSON.parse((new Buffer.from(req.params.studInfo, 'base64')).toString('ascii'))
-	const diagnosis = JSON.parse((new Buffer.from(req.params.diagnosis, 'base64')).toString('ascii'))
+app.post('/sp/set_appointment', async (req, res) => {
+	const {initData} = req.body
 	
-	res.render('html' + path.sep + 'sp' + path.sep + 'set_appointment', {
-		studInfo, diagnosis
-	})
+	if(!isValidInitData(initData)){
+		res.status(401).json({
+			status: "error",
+			result: {
+				msg: "Not a valid request."
+			}
+		})
+		return;
+	}
+
+	
 })
 
 app.get('/sp_edit_appointment/:appointmentId/:initData', (req, res) => {
@@ -479,9 +505,7 @@ app.get("/sp/check_requests/:initData", (req, res) => {
 	// res.render('html' + path.sep + 'sp' + path.sep + 'sp_check_requests');
 })
 
-/**
-* USER AUTH
-*/
+
 
 app.post('/stud_signup', (req, res) => {
 	const {stud_id, f_name, l_name, email, phone_no, ed_info, initData} = req.body
@@ -608,44 +632,25 @@ app.post('/stud_verify', (req, res) => {
 		.then(async (response) => {
 
 			if(response.data.status && response.data.status == "success"){
-				let collection = db.collection("sessions");
-				const isSucc = await collection.replaceOne(
-					{ key: `${userId}:${userId}` },
-					{ key: `${userId}:${userId}`, data: {
-						token : `${response.data.result.token}`,
-						date : new Date()
-					}},
-					{ upsert: true }
-				)
-				// console.log(isSucc)
-
-				if (isSucc.acknowledged){
-					res.status(200).cookie({msg: response.data.result.token}).json({
-						status: "success",
-						result: {
-							msg: response.data.result.msg
-						}
-					})
-					
-					// console.log(bot)
-					let student = new Student(bot);
-					student.home(userId, fName);
-				}else {
-					const isSucc2 = await collection.insertOne(replacement);
-
-					if (isSucc2.acknowledged) {
+				
+				db.addSession(`${userId}:${userId}`, {
+					token : `${response.data.result.token}`,
+					expiration : new Date(new Date().getTime() + (response.data.result.expiration * 60 * 60 * 60)),
+					role : response.data.result.role
+				}, 
+				function (retVal){
+					console.log(retVal)
+					if (retVal && retVal.status) {
 						res.status(200).cookie({msg: response.data.result.token}).json({
 							status: "success",
 							result: {
 								msg: response.data.result.msg
 							}
-						});
-
-						// console.log(bot)
-
+						})
+		
 						let student = new Student(bot);
 						student.home(userId, fName);
-					} else {
+					}else if (retVal && !retVal.status) {
 						return res.status(401).cookie({msg: response.data.result.token}).json({
 							status: "error",
 							result: {
@@ -653,10 +658,8 @@ app.post('/stud_verify', (req, res) => {
 							}
 						})
 					}
-				}
-
-				// let student = new Student(bot);
-				// student.home(userId, fName);
+				})
+					
 			} else {
 				res.status(500).json({
 					status: "error",
@@ -691,13 +694,58 @@ app.post('/stud_send_request', async (req, res) => {
 	const decodedUrlParams = new URLSearchParams(initData);
 	const userId = JSON.parse(decodedUrlParams.get("user")).id;
 
+	db.getSession(`${userId}:${userId}`, function (retVal) {
+		if (retVal && retVal.status) {
+			axios.post(process.env.API + "/user/addRequest", {
+				client : "telegram",
+				callbackUrl : process.env.BASE_WEB_API + "/sp/notify_student_request",
+				stud_id : userId,
+				sp_team : sp_team,
+				token : retVal.result.data.data.token,
+				issuedAt : new Date().getTime(),
+				diagnosis : diagnosis,
+				initData : initData,
+			}).then((response) => {
+				if(response.data.status && response.data.status == "success"){
+					res.status(200).json({
+						status: "success",
+						result: {
+							msg: "Your request sent successfully, we will notify you as soon as a service provider take a look at it."
+						}
+					})
+				} else {
+					res.status(500).json({
+						status: "error",
+						result: {
+							msg: response.data.result.msg
+						}
+					})
+				}
+			}).catch((error) => {
+				res.status(500).json({
+					status: "error",
+					result: {
+						msg: "Axios Error, Cannot send request to the backend " + JSON.stringify(error)
+					}
+				})
+			})
+		}else if (retVal && !retVal.status) {
+			res.status(401).json({
+				status: "error",
+				result: {
+					msg: "Unauthorized action : " + retVal.result.msg
+				}
+			})
+		}
+	})
+	/*
 	let collection = db.collection("sessions");
 	await collection.findOne({key: `${userId}:${userId}`})
 	.then((value) => {
 		if (value && value.data && value.data.token){
 			axios.post(process.env.API + "/user/addRequest", {
 				client : "telegram",
-				callbackUrl : process.env.BASE_WEB_API + "/hook/notify",
+				callbackUrl : process.env.BASE_WEB_API + "/sp/notify_student_request",
 				stud_id : userId,
 				sp_team : sp_team,
 				token : value.data.token,
@@ -740,11 +788,10 @@ app.post('/stud_send_request', async (req, res) => {
 			}
 		})
 	})	
+	*/
 })
 
-/**
-* ADMIN AUTH
-*/
+
 
 app.post('/admin_signup', (req, res) => {
 const { f_name, l_name, email, speciality,
@@ -868,12 +915,13 @@ app.post('/chapaPay', (req, res) => {
 		   })
 	   }
    }).catch((error) => {
-	   res.status(400).json({
-		   status: "error",
-		   result: {
-			   msg: error.response.data.result.msg
-		   }
-	   })
+		console.log(error.response.data)
+		res.status(400).json({
+			status: "error",
+			result: {
+				msg: error.response.data.result.msg
+			}
+		})
    })
 })
 
@@ -881,7 +929,7 @@ app.post('/chapaPay', (req, res) => {
 
 bot.start(home);
 
-bot.action("home", home); //this is the event that is going to be triggered when the <<back button is clicked
+bot.action("home", home);
 bot.action("login", login);
 bot.action("signup", signup);
 bot.action("about_us", aboutUs);
@@ -890,87 +938,15 @@ const serviceProvider = new ServiceProvider();
 bot.action("sp_logout", serviceProvider.logout);
 bot.action("y_sp_logout", serviceProvider.yesLogout);
 bot.action("n_sp_logout", serviceProvider.noLogout);
+bot.action("reject_stud_request", serviceProvider.rejectStudRequest);
+bot.action("y_reject_stud_request", serviceProvider.yesRejectStudRequest);
+bot.action("n_reject_stud_request", serviceProvider.noRejectStudRequest);
 
 bot.catch((err, ctx) => {
 	console.error("Error occured in bot : ", err)
 })
-// bot.action("sp_appointments", serviceProvider.getAppointments);
 
 const admin = new Admin();
 const student = new Student();
-/*
-bot.on("message", async function (ctx) {
-	if (
-		ctx.message.web_app_data &&
-		ctx.message.web_app_data.data &&
-		ctx.message.web_app_data.button_text
-	) {
-		if (
-			ctx.message.web_app_data.button_text.indexOf("Service Provider") !=
-			-1
-		) {
-			try {
-				const data = JSON.parse(ctx.message.web_app_data.data);
-				if (data.type) {
-					switch (data.type) {
-						case 2343: //request type
-							serviceProvider.login(ctx, data);
-							break;
-						case 2212:
-							serviceProvider.signup(ctx);
-							break;
-					}
-				}
-			} catch (error) {
-				generalError(ctx, "Invalid data, please try again.");
-				console.log(error);
-			}
-		}
-		if (ctx.message.web_app_data.button_text.indexOf("Student") != -1) {
-			try {
-				const data = JSON.parse(ctx.message.web_app_data.data);
-				if (data.type) {
-					switch (data.type) {
-						case 2343: //request type
-							student.login(ctx);
-							break;
-						case 2212:
-							student.signup(ctx);
-							break;
-					}
-				}
-			} catch (error) {
-				generalError(ctx, "Invalid data, please try again.");
-				console.log(error);
-			}
-		}
 
-		if (
-			ctx.message.web_app_data.button_text.indexOf("Verify token") != -1
-		) {
-			ctx.session.logging_in = true;
-			try {
-				const data = JSON.parse(ctx.message.web_app_data.data);
-				if (data.type) {
-					switch (data.type) {
-						case 7564: //role type
-							serviceProvider.verify(ctx, data);
-							break;
-						case 1721:
-							student.verify(ctx, data);
-							break;
-						case 4388:
-							admin.verify(ctx, data);
-							break;
-					}
-				}
-			} catch (error) {
-				generalError(ctx, "Invalid data, please try again.");
-				console.log(error);
-			}
-		}
-	}
-});
-*/
-})
 bot.launch();
