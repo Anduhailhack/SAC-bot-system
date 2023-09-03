@@ -22,9 +22,9 @@
     <div class="container">
         <h2>Sign up</h2>
         <p id="caption" class="caption">Complete our form accordingly.</p>
-        <input type="text" name="provider_id" id="id" placeholder="TASH ID">
-        <input type="text" name="f_name" id="f-name" placeholder="Your Name">
-        <input type="text" name="l_name" id="l-name" placeholder="Father Name">
+        <input type="text" name="provider_id" id="id" placeholder="AAU ID">
+        <input type="text" name="f_name" id="f-name" placeholder="First Name">
+        <input type="text" name="l_name" id="l-name" placeholder="Last Name">
         <input type="email" name="email" id="email" placeholder="Email">
         <input type="tel" name="phone_no" id="phone-no" placeholder="Mobile">
         <!-- <button id="phone-no-btn">Phone number</button> -->
@@ -32,13 +32,12 @@
         <datalist id="educational_bkg">
             <option value="Psychology">
             <option value="Psychiatry">
-            <option value="BereketeAbb">
         </datalist>
         <select name="health_team" id="health-team">
-            <option value="mental_health">Mental</option>
-            <option value="medical_health">Medical</option>
+            <option value="mental">Mental</option>
+            <option value="physical">Physical</option>
         </select>
-        <input type="text" name="work_exp" id="work-exp" placeholder="Work experience">
+        <input type="text" name="speciality" id="speciality" placeholder="Speciality/Sub-Speciality">
         <input type="text" name="office_location" id="office-location" placeholder="Office building and number">
         <fieldset>
             <legend>Available working hours</legend>
@@ -50,6 +49,18 @@
             <label for="end_at">Finish at:
                 <input type="time" name="end_at" id="end-at">
             </label>
+
+            <label for="dates" id="dateSelection">Working Dates:
+                <input type="checkbox" name="dates" id="dates monday" value="monday"> <label for="monday">Monday</label> <br> 
+                <input type="checkbox" name="dates" id="dates tuesday" value="tuesday"> <label for="monday">Tuesday</label> <br>  
+                <input type="checkbox" name="dates" id="dates wednesday" value="wednesday"> <label for="monday">Wednsday</label> <br>  
+                <input type="checkbox" name="dates" id="dates thursday" value="thursday"> <label for="monday">Thursday</label> <br>  
+                <input type="checkbox" name="dates" id="dates friday" value="friday"> <label for="monday">Friday</label> <br>  
+                <input type="checkbox" name="dates" id="dates saturday" value="saturday"> <label for="monday">Saturday</label> <br>  
+                <input type="checkbox" name="dates" id="dates sunday" value="sunday"> <label for="monday">Sunday</label> <br>  
+            </label>
+
+            
         </fieldset>
         <button id="signup-btn">Sign up</button>
     </div>

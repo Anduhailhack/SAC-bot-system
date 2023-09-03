@@ -16,13 +16,13 @@
         <p>Complete the Form Accordingly</p> <br>
         <p id="caption"></p>
             <!-- <input style="width: 100%;" type="text" name="tx_ref" id="tx_ref" placeholder="negade-tx-12345678sss9" /> <br> -->
-            <input style="width: 100%;" type="text" name="email" id="email" placeholder="example@email.com" placeholder="bereketeabbirku@gmail.com" /> <br>
-            <input style="width: 100%;" type="text" name="first_name" id="first_name" placeholder="first_name" /> <br>
-            <input style="width: 100%;" type="text" name="last_name" id="last_name" placeholder="last_name" /> <br>
+            <input style="width: 100%;" type="email" name="email" id="email" placeholder="example@email.com" placeholder="bereketeabbirku@gmail.com" /> <br>
+            <input style="width: 100%;" type="text" name="first_name" id="first_name" placeholder="First Name" /> <br>
+            <input style="width: 100%;" type="text" name="last_name" id="last_name" placeholder="Last Name" /> <br>
             <input style="width: 100%;" type="text" name="amount" id="amount" placeholder="100" /> <br>
             <input style="width: 100%;" type="text" name="phone_number" id="phone_number" placeholder="0900112233" /> <br>
-            <input style="width: 100%;" type="text" name="title" id="title" placeholder="Let us do this" /> <br>
-            <input style="width: 100%;" type="text" name="description" id="description" placeholder="Paying with Confidence with chapa" /> <br>
+            <!-- <input style="width: 100%;" type="text" name="title" id="title" placeholder="Let us do this" /> <br> -->
+            <input style="width: 100%;" type="text" name="description" id="description" placeholder="description of payment" /> <br>
             <button type="submit" id="submit">Pay Now</button>
 
     </div>
@@ -32,65 +32,54 @@
 
     <script>
         var submit = document.getElementById("submit")
-var chapaForm = document.getElementById("chapaForm")
+
+    submit.addEventListener("click", (event)=>{
+        var tx_ref = `txRef-${Date.now()}`
+        alert(`Your payment reference is ${tx_ref}`)
+
+        var amount = document.getElementById("amount").value
+        var email = document.getElementById("email").value
+        var first_name = document.getElementById("first_name").value
+        var last_name = document.getElementById("last_name").value
+        var phone_number = document.getElementById("phone_number").value
+        var title = "SAC Donation"
+        var description = document.getElementById("description").value
 
 
-var caption = document.getElementById("caption")
-// var tx_ref = document.getElementById("tx_ref").value
-var amount = document.getElementById("amount").value
-var email = document.getElementById("email").value
-var first_name = document.getElementById("first_name").value
-var last_name = document.getElementById("last_name").value
-var title = document.getElementById("title").value
-var description = document.getElementById("description").value
-
-submit.addEventListener("click", (event)=>{
-    var tx_ref = `txRef-${Date.now()}`
-    alert(`Your tx_ref is ${tx_ref}`)
-
-    var amount = document.getElementById("amount").value
-    var email = document.getElementById("email").value
-    var first_name = document.getElementById("first_name").value
-    var last_name = document.getElementById("last_name").value
-    var phone_number = document.getElementById("phone_number").value
-    var title = document.getElementById("title").value
-    var description = document.getElementById("description").value
-
-
-    fetch('/chapaPay', {
-        method: "post",
-        headers: {
-            "Content-Type" : "application/json"
-        },
-        body: JSON.stringify({
-            tx_ref,
-            amount,
-            // currency,
-            email,
-            first_name,
-            last_name,
-            title,
-            phone_number,
-            description,
-        })
-    }).then((result) =>  result.json()
-    ).then((res) => {
-        let msg = res.result.msg;
-        if(typeof(msg) == "object"){
-            if(msg.hasOwnProperty("email")){
-                res.result.msg = msg.email[0]
+        fetch('/chapaPay', {
+            method: "post",
+            headers: {
+                "Content-Type" : "application/json"
+            },
+            body: JSON.stringify({
+                tx_ref,
+                amount,
+                // currency,
+                email,
+                first_name,
+                last_name,
+                title,
+                phone_number,
+                description,
+            })
+        }).then((result) =>  result.json()
+        ).then((res) => {
+            let msg = res.result.msg;
+            if(typeof(msg) == "object"){
+                if(msg.hasOwnProperty("email")){
+                    res.result.msg = msg.email[0]
+                }
+                res.result.msg = JSON.stringify(res.result.msg)
             }
-            res.result.msg = JSON.stringify(res.result.msg)
-        }
-        if(res.status == "error"){
-            caption.innerText = res.result.msg
-            caption.classList.add("warning")
-            webApp.showAlert(res.result.msg)
-        } else if (res.status == "success"){
-            window.location.href = res.result.data.checkout_url
-        }
+            if(res.status == "error"){
+                caption.innerText = res.result.msg
+                caption.classList.add("warning")
+                webApp.showAlert(res.result.msg)
+            } else if (res.status == "success"){
+                window.location.href = res.result.data.checkout_url
+            }
+        })
     })
-})
 
     </script>
     

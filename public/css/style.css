@@ -111,4 +111,15 @@ ul {
   border-radius: 4px;
   border: 1px solid var(--tg-theme-link-color, #50a8eb);
   background-color: var(--tg-theme-bg-color, #ffffff);
-}/*# sourceMappingURL=style.css.map */
+}
+
+#dates label, #dates input {
+  font-size: smaller;
+  display: inline-block;
+}
+
+#dept.input, #batch.input {
+  color: var(--tg-theme-hint-color, #ccc);
+}
+
+/*# sourceMappingURL=style.css.map */
