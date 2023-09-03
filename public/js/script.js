@@ -1,7 +1,7 @@
 "use strict";
 
 // const $ = document;
-const {isEmail, isName, isPhoneNo} = require("../../util/Validator.js")
+//const {isEmail, isName, isPhoneNo} = require("../../util/Validator.js")
 
 const WebApp = function () {
 	Telegram.WebApp.ready();
