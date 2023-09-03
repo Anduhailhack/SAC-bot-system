@@ -5,20 +5,11 @@ function isEmail(email) {
 	return /^[\w]+([\.-]?[\w]+)*@aau\.edu\.et$/.test(email);
 }
 
-/*
-const isValidEmail = isEmail("james_brown@abc.edu.e");
-console.log(isValidEmail);
-*/
-
 function isPhoneNo(phoneNumber) {
     // check for Telecom or Safaricom phone number
 	return /^(?:\+251|0)[97]\d{8}$/.test(phoneNumber);
 }
 
-/*
-const isValidPhoneNumber = isPhoneNo("+251712345678");
-console.log(isValidPhoneNumber);
-*/
 
 function isName(name){
 	let isValid = (name.length > 3);
