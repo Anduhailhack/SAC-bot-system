@@ -1,8 +1,15 @@
 const crypto = require("crypto")
 
 function isEmail(email) {
-	return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
+    // check for aau.edu.et domain 
+	return /^[\w]+([\.-]?[\w]+)*@aau\.edu\.et$/.test(email);
 }
+
+function isPhoneNo(phoneNumber) {
+    // check for Telecom or Safaricom phone number
+	return /^(?:\+251|0)[97]\d{8}$/.test(phoneNumber);
+}
+
 
 function isName(name){
 	let isValid = (name.length > 3);
@@ -27,4 +34,4 @@ function isValidInitData (telegramInitData){
     return calculatedHash == hash;
 }
 
-module.exports = {isEmail, isName, isValidInitData}
+module.exports = {isEmail, isName, isPhoneNo, isValidInitData}
